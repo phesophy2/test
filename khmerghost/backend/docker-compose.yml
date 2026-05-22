@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    container_name: khmerghost-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+      - DISPLAY=:99  # For non-headless browser
+    volumes:
+      - ./backend:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix  # For display (optional)
+    shm_size: 2gb  # Important for Chromium

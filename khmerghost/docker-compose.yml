@@ -1,0 +1,154 @@
+services:
+  # ==========================================
+  # BACKEND API
+  # ==========================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: khmerghost-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DB_PATH=/app/data/khmerghost.db
+      - EMULATOR_HOST=emulator-android
+      - EMULATOR_PORT=5555
+      - ADB_HOST=adb-server
+      - ADB_PORT=5037
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - khmerghost-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  # ==========================================
+  # FRONTEND (React)
+  # ==========================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: khmerghost-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+      - PORT=3001
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - khmerghost-network
+
+  # ==========================================
+  # CONTROL UI (Phone control panel — port 3002)
+  # Like LDPlayer but in browser
+  # ==========================================
+  control-ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: khmerghost-control-ui
+    ports:
+      - "3002:80"
+    restart: unless-stopped
+    networks:
+      - khmerghost-network
+
+  # ==========================================
+  # REDIS (Cache & Sessions)
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: khmerghost-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - khmerghost-network
+
+  # ==========================================
+  # ANDROID EMULATOR (Linux/KVM only)
+  # Run with: docker-compose --profile emulator up -d
+  # ==========================================
+  emulator-android:
+    image: redroid/redroid:11.0.0-latest
+    container_name: khmerghost-emulator
+    privileged: true
+    ports:
+      - "5555:5555"
+      - "5900:5900"
+    volumes:
+      - android-data:/data
+    networks:
+      - khmerghost-network
+    environment:
+      - androidboot.hardware=redroid
+      - androidboot.redroid_width=720
+      - androidboot.redroid_height=1280
+      - androidboot.redroid_dpi=320
+      - androidboot.redroid_gpu_mode=guest
+      - androidboot.redroid_fps=30
+    restart: unless-stopped
+    profiles:
+      - emulator
+
+  # ==========================================
+  # ADB SERVER
+  # Run with: docker-compose --profile emulator up -d
+  # ==========================================
+  adb-server:
+    image: devicefarmer/adb:latest
+    container_name: khmerghost-adb
+    privileged: true
+    ports:
+      - "5037:5037"
+    networks:
+      - khmerghost-network
+    depends_on:
+      - emulator-android
+    restart: unless-stopped
+    command: adb -a -P 5037 server nodaemon
+    profiles:
+      - emulator
+
+  # ==========================================
+  # NOVNC (View emulator in browser)
+  # Open http://localhost:6080
+  # ==========================================
+  novnc:
+    image: theasp/novnc:latest
+    container_name: khmerghost-novnc
+    ports:
+      - "6080:8080"
+    environment:
+      - NOVNC_HOST=emulator-android
+      - NOVNC_PORT=5900
+    networks:
+      - khmerghost-network
+    depends_on:
+      - emulator-android
+    restart: unless-stopped
+    profiles:
+      - emulator
+
+networks:
+  khmerghost-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  android-data:

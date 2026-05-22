@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KhmerGhost Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.hdr{background:#1a1a2e;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #e94560;position:sticky;top:0;z-index:100}
+.hdr h1{color:#e94560;font-size:1.1rem}
+.badges{display:flex;gap:8px}
+.badge{display:flex;align-items:center;gap:5px;background:#0d0d1a;padding:4px 10px;border-radius:20px;font-size:0.72rem}
+.dot{width:7px;height:7px;border-radius:50%;background:#555}
+.dot.on{background:#00ff88;animation:pu 2s infinite}
+.dot.off{background:#ff4444}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.4}}
+.tabs{display:flex;background:#111;border-bottom:1px solid #222;padding:0 16px;overflow-x:auto}
+.tab{padding:12px 18px;cursor:pointer;font-size:0.8rem;color:#666;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab.active{color:#e94560;border-bottom-color:#e94560}
+.tab:hover{color:#fff}
+.page{display:none;padding:16px;max-width:1200px;margin:0 auto}
+.page.active{display:block}
+.card{background:#1a1a2e;border-radius:12px;padding:16px;border:1px solid #222;margin-bottom:14px}
+.ct{color:#e94560;font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#1a1a2e;border-radius:10px;padding:14px;text-align:center;border:1px solid #222}
+.stat .n{font-size:2rem;font-weight:bold;color:#e94560}
+.stat .l{font-size:0.68rem;color:#666;margin-top:3px}
+.btn{background:#16213e;border:1px solid #2a2a4a;color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:0.78rem;transition:all .2s}
+.btn:hover{background:#e94560;border-color:#e94560}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:linear-gradient(135deg,#e94560,#ff6b6b);border:none;font-weight:bold;padding:11px 20px;font-size:0.85rem}
+.btn.green{background:#00c853;border-color:#00c853;color:#000;font-weight:bold}
+.btn.blue{background:#1877f2;border-color:#1877f2}
+.btn.sm{padding:5px 10px;font-size:0.7rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+input,select{background:#0d0d1a;border:1px solid #333;color:#fff;padding:9px 12px;border-radius:8px;font-size:0.8rem;width:100%}
+input:focus,select:focus{outline:none;border-color:#e94560}
+label{font-size:0.72rem;color:#888;display:block;margin-bottom:4px}
+.res{background:#0d0d1a;border-radius:8px;padding:12px;font-size:0.78rem;display:none;word-break:break-all;line-height:1.9;border-left:3px solid #e94560;margin-top:10px}
+.res.ok{border-color:#00ff88;color:#00ff88}
+.res.err{border-color:#ff4444;color:#ff4444}
+.tw{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:0.73rem}
+th{background:#0d0d1a;color:#e94560;padding:9px 10px;text-align:left;position:sticky;top:0;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #1a1a2e;color:#ccc;vertical-align:middle}
+tr:hover td{background:#16213e}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.62rem;font-weight:bold}
+.tag.created{background:#1a3a1a;color:#00ff88}
+.tag.banned{background:#3a1a1a;color:#ff4444}
+.tag.active{background:#1a2a3a;color:#00bcd4}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid #fff3;border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ibox{background:#0d0d1a;border-radius:8px;padding:10px;margin-bottom:6px;border-left:3px solid #e94560}
+.ibox .fr{color:#888;font-size:0.65rem}
+.ibox .sb{color:#fff;font-size:0.75rem;margin:3px 0}
+.fp-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1a2e;font-size:0.75rem}
+.fp-row:last-child{border:none}
+.fp-k{color:#888}
+.fp-v{color:#fff;font-weight:500}
+.logbox{background:#0a0a0a;border-radius:8px;padding:10px;height:140px;overflow-y:auto;font-family:monospace;font-size:0.68rem;border:1px solid #1a1a2e}
+.logbox .i{color:#00ff88}.logbox .e{color:#ff4444}.logbox .w{color:#ffaa00}.logbox .s{color:#00bcd4}
+.nc{background:#0d0d1a;border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;border:1px solid #222;transition:border-color .2s}
+.nc:hover,.nc.sel{border-color:#e94560}
+.nc .nn{font-size:0.9rem;font-weight:bold;color:#fff}
+.nc .nm{font-size:0.65rem;color:#888;margin-top:2px}
+.mc{background:#0d0d1a;border-radius:8px;padding:10px;margin-bottom:6px;border-left:3px solid #1877f2}
+.mc .mf{color:#888;font-size:0.65rem}
+.mc .mt{color:#fff;font-size:0.75rem;margin:4px 0}
+.otp{background:#e94560;color:#fff;padding:3px 10px;border-radius:10px;font-weight:bold;font-size:0.8rem;cursor:pointer;border:none}
+.cpbtn{background:none;border:1px solid #333;color:#888;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.65rem;margin-left:6px}
+.cpbtn:hover{border-color:#e94560;color:#e94560}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>🔮 KhmerGhost Dashboard</h1>
+  <div class="badges">
+    <div class="badge"><div class="dot" id="d-api"></div>API: <span id="l-api">...</span></div>
+    <div class="badge"><div class="dot" id="d-db"></div>DB: <span id="l-db">...</span></div>
+    <div class="badge" style="color:#888">👑 JZYY</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="goTab('farm',this)">🌾 Farm</div>
+  <div class="tab" onclick="goTab('accounts',this)">📋 Accounts</div>
+  <div class="tab" onclick="goTab('mail',this)">📧 Email</div>
+  <div class="tab" onclick="goTab('phone',this)">📱 Phone</div>
+  <div class="tab" onclick="goTab('fingerprint',this)">🔍 Fingerprint</div>
+  <div class="tab" onclick="goTab('log',this)">📝 Log</div>
+</div>
+
+<!-- ═══ FARM TAB ═══ -->
+<div class="page active" id="tab-farm">
+  <div class="stats">
+    <div class="stat"><div class="n" id="s-total">-</div><div class="l">Total Accounts</div></div>
+    <div class="stat"><div class="n" id="s-active">-</div><div class="l">Active</div></div>
+    <div class="stat"><div class="n" id="s-banned">-</div><div class="l">Banned</div></div>
+    <div class="stat"><div class="n" id="s-today">-</div><div class="l">Created Today</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🚀 Create Single Account</div>
+      <div style="margin-bottom:10px">
+        <label><input type="checkbox" id="opt-mail" checked> Use Email (Mail.tm)</label>
+        <label style="margin-top:6px"><input type="checkbox" id="opt-phone"> Use Phone Number</label>
+        <label style="margin-top:6px"><input type="checkbox" id="opt-warmup"> Enable Warm-up</label>
+        <div style="margin-top:8px">
+          <label>Proxy (optional)</label>
+          <input type="text" id="opt-proxy" placeholder="ip:port">
+        </div>
+      </div>
+      <button class="btn primary" id="btn-create" onclick="createAccount()" style="width:100%">
+        🚀 Create Account
+      </button>
+      <div class="res" id="res-create"></div>
+    </div>
+
+    <div class="card">
+      <div class="ct">✖ Bulk Create</div>
+      <div style="margin-bottom:10px">
+        <label>Number of accounts</label>
+        <input type="number" id="bulk-count" value="3" min="1" max="20">
+        <div style="margin-top:8px;font-size:0.72rem;color:#888">
+          Each account gets unique email, fingerprint, and Cambodia location.<br>
+          Delay: 5-10s between accounts.
+        </div>
+      </div>
+      <button class="btn primary" id="btn-bulk" onclick="createBulk()" style="width:100%">
+        🔥 Start Bulk Create
+      </button>
+      <div class="res" id="res-bulk"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">📊 Recent Accounts</div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>#</th><th>Email</th><th>Password</th><th>Name/Device</th><th>City</th><th>Status</th><th>Created</th></tr></thead>
+        <tbody id="farm-acc-body"><tr><td colspan="7" style="text-align:center;color:#555;padding:20px">Loading...</td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn sm" onclick="loadFarmAccounts()">🔄 Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ACCOUNTS TAB ═══ -->
+<div class="page" id="tab-accounts">
+  <div class="card">
+    <div class="ct">📋 All Accounts</div>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn sm" onclick="loadAllAccounts()">🔄 Refresh</button>
+      <button class="btn sm" onclick="exportAccounts()">📥 Export CSV</button>
+      <input type="text" id="acc-search" placeholder="Search email..." style="width:200px;padding:6px 10px;font-size:0.75rem" oninput="filterAccounts()">
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>#</th><th>Email</th><th>Password</th><th>Device</th><th>City</th><th>Status</th><th>Farm Ready</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody id="all-acc-body"><tr><td colspan="9" style="text-align:center;color:#555;padding:20px">Click Refresh</td></tr></tbody>
+      </table>
+    </div>
+    <div id="acc-count" style="margin-top:8px;font-size:0.72rem;color:#888"></div>
+  </div>
+</div>
+
+<!-- ═══ EMAIL TAB ═══ -->
+<div class="page" id="tab-mail">
+  <div class="g2">
+    <div class="card">
+      <div class="ct">📧 Generate Email</div>
+      <div style="margin-bottom:10px">
+        <label>Provider</label>
+        <select id="mail-provider">
+          <option value="mail.tm">Mail.tm (Recommended)</option>
+          <option value="guerrilla">Guerrilla Mail</option>
+        </select>
+      </div>
+      <button class="btn green" onclick="genMail()" style="width:100%">📧 Generate Email</button>
+      <div class="res" id="res-mail"></div>
+      <div id="mail-detail" style="display:none;margin-top:10px">
+        <div style="background:#0d0d1a;border-radius:8px;padding:12px">
+          <div style="font-size:0.72rem;color:#888;margin-bottom:4px">Email Address</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <code id="mail-addr" style="color:#00ff88;font-size:0.85rem;flex:1"></code>
+            <button class="cpbtn" onclick="copy('mail-addr')">Copy</button>
+          </div>
+          <div style="font-size:0.72rem;color:#888;margin-top:8px;margin-bottom:4px">Password</div>
+          <code id="mail-pass" style="color:#fff;font-size:0.8rem"></code>
+          <div style="font-size:0.72rem;color:#888;margin-top:8px">Provider: <span id="mail-prov" style="color:#fff"></span></div>
+        </div>
+        <button class="btn" onclick="checkInbox()" style="width:100%;margin-top:8px">📬 Check Inbox</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">📬 Inbox</div>
+      <div id="inbox-content" style="color:#555;font-size:0.78rem;padding:10px 0">
+        Generate an email first, then check inbox here.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PHONE TAB ═══ -->
+<div class="page" id="tab-phone">
+  <div class="g2">
+    <div class="card">
+      <div class="ct">📱 Get Free Numbers</div>
+      <div style="margin-bottom:10px">
+        <label>Country</label>
+        <select id="phone-country">
+          <option value="US">🇺🇸 United States</option>
+          <option value="UK">🇬🇧 United Kingdom</option>
+          <option value="CA">🇨🇦 Canada</option>
+        </select>
+      </div>
+      <button class="btn green" onclick="getNumbers()" style="width:100%">📱 Get Numbers</button>
+      <div id="numbers-list" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="ct">💬 SMS Messages</div>
+      <div id="sms-info" style="color:#555;font-size:0.78rem;padding:10px 0">Select a number to see messages.</div>
+      <div id="sms-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FINGERPRINT TAB ═══ -->
+<div class="page" id="tab-fingerprint">
+  <div class="g2">
+    <div class="card">
+      <div class="ct">🔍 Generate Cambodia Fingerprint</div>
+      <button class="btn green" onclick="genFP()" style="width:100%;margin-bottom:10px">🎲 Generate Random Fingerprint</button>
+      <div id="fp-box" style="display:none"></div>
+    </div>
+    <div class="card">
+      <div class="ct">📱 Device Profiles</div>
+      <div style="font-size:0.75rem;line-height:2;color:#ccc">
+        <div>📱 <b style="color:#fff">Samsung Galaxy A14</b> — Most common in Cambodia</div>
+        <div>📱 <b style="color:#fff">Xiaomi Redmi Note 12</b> — Popular budget phone</div>
+        <div>📱 <b style="color:#fff">OPPO A78</b> — Common mid-range</div>
+        <hr style="border-color:#222;margin:8px 0">
+        <div>📍 <b style="color:#e94560">Cities:</b></div>
+        <div>Phnom Penh · Siem Reap · Battambang · Sihanoukville · Kampong Cham</div>
+        <hr style="border-color:#222;margin:8px 0">
+        <div>🌐 Language: <b style="color:#fff">km-KH</b></div>
+        <div>🕐 Timezone: <b style="color:#fff">Asia/Phnom_Penh (UTC+7)</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOG TAB ═══ -->
+<div class="page" id="tab-log">
+  <div class="card">
+    <div class="ct">📝 Activity Log</div>
+    <div class="logbox" id="logbox" style="height:500px"></div>
+    <button class="btn sm" onclick="document.getElementById('logbox').innerHTML=''" style="margin-top:8px">🗑️ Clear</button>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000';
+let allAccounts = [];
+let mailToken = null, mailProv = null;
+let selNumber = null;
+
+// ── Tab nav ───────────────────────────────────────────────────
+function goTab(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  if(name === 'accounts') loadAllAccounts();
+}
+
+// ── Log ───────────────────────────────────────────────────────
+function log(msg, type='i') {
+  const box = document.getElementById('logbox');
+  const d = document.createElement('div');
+  d.className = type;
+  d.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  while(box.children.length > 200) box.removeChild(box.firstChild);
+}
+
+// ── API ───────────────────────────────────────────────────────
+async function api(path, method, body) {
+  method = method || 'GET';
+  try {
+    const opts = { method, headers: {'Content-Type':'application/json'} };
+    if(body) opts.body = JSON.stringify(body);
+    const r = await fetch(API + path, opts);
+    return await r.json();
+  } catch(e) {
+    log('API error: ' + e.message, 'e');
+    return null;
+  }
+}
+
+function showRes(id, data, html) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  if(data && data.success !== false && html) {
+    el.className = 'res ok';
+    el.innerHTML = html;
+  } else {
+    el.className = 'res err';
+    el.textContent = 'Error: ' + ((data && data.error) || 'Failed');
+  }
+}
+
+function copy(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => log('Copied: ' + el.textContent.substring(0,30), 's'));
+}
+
+// ── Status ────────────────────────────────────────────────────
+async function checkStatus() {
+  const h = await api('/health');
+  const apiDot = document.getElementById('d-api');
+  const dbDot  = document.getElementById('d-db');
+  if(h && h.status) {
+    apiDot.className = 'dot on';
+    document.getElementById('l-api').textContent = 'Online';
+    dbDot.className = h.dbReady ? 'dot on' : 'dot off';
+    document.getElementById('l-db').textContent = h.dbReady ? 'Ready' : 'Error';
+  } else {
+    apiDot.className = 'dot off';
+    document.getElementById('l-api').textContent = 'Offline';
+    dbDot.className = 'dot off';
+    document.getElementById('l-db').textContent = 'N/A';
+  }
+}
+
+// ── Stats ─────────────────────────────────────────────────────
+async function loadStats() {
+  const d = await api('/api/farm/status');
+  if(d && d.stats) {
+    document.getElementById('s-total').textContent  = d.stats.total;
+    document.getElementById('s-active').textContent = d.stats.active;
+    document.getElementById('s-banned').textContent = d.stats.banned;
+  }
+  // Count today
+  const accs = await api('/api/farm/accounts');
+  if(accs && accs.accounts) {
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = accs.accounts.filter(a => a.created_at && a.created_at.startsWith(today)).length;
+    document.getElementById('s-today').textContent = todayCount;
+  }
+}
+
+// ── Farm Accounts (recent) ────────────────────────────────────
+async function loadFarmAccounts() {
+  const d = await api('/api/farm/accounts');
+  if(!d || !d.accounts) return;
+  allAccounts = d.accounts;
+  const tbody = document.getElementById('farm-acc-body');
+  if(!d.accounts.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#555;padding:20px">No accounts yet. Create one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.accounts.slice(0,20).map(a =>
+    '<tr>' +
+    '<td>' + a.id + '</td>' +
+    '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + a.email + '">' + a.email + '</td>' +
+    '<td style="font-size:0.68rem;color:#888">' + (a.password || '-').substring(0,12) + '...</td>' +
+    '<td style="font-size:0.68rem">' + (a.device_profile || '-').replace(/_/g,' ') + '</td>' +
+    '<td>' + (a.city || '-').replace(/_/g,' ') + '</td>' +
+    '<td><span class="tag ' + a.status + '">' + a.status + '</span></td>' +
+    '<td style="font-size:0.68rem;color:#888">' + (a.created_at || '-').split(' ')[0] + '</td>' +
+    '</tr>'
+  ).join('');
+  log('Loaded ' + d.count + ' accounts (' + d.duration + ')', 's');
+}
+
+// ── All Accounts ──────────────────────────────────────────────
+async function loadAllAccounts() {
+  const d = await api('/api/farm/accounts');
+  if(!d || !d.accounts) return;
+  allAccounts = d.accounts;
+  renderAllAccounts(allAccounts);
+  document.getElementById('acc-count').textContent = 'Total: ' + d.count + ' accounts';
+}
+
+function renderAllAccounts(list) {
+  const tbody = document.getElementById('all-acc-body');
+  if(!list.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#555;padding:20px">No accounts</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(a =>
+    '<tr>' +
+    '<td>' + a.id + '</td>' +
+    '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + a.email + '">' + a.email + '</td>' +
+    '<td><code style="font-size:0.65rem;color:#888">' + (a.password || '-') + '</code></td>' +
+    '<td style="font-size:0.68rem">' + (a.device_profile || '-').replace(/_/g,' ') + '</td>' +
+    '<td>' + (a.city || '-').replace(/_/g,' ') + '</td>' +
+    '<td><span class="tag ' + a.status + '">' + a.status + '</span></td>' +
+    '<td style="text-align:center">' + (a.farm_ready ? '✅' : '⏳') + '</td>' +
+    '<td style="font-size:0.68rem;color:#888">' + (a.created_at || '-') + '</td>' +
+    '<td><button class="btn sm" onclick="farmAcc(' + a.id + ')">🌾 Farm</button></td>' +
+    '</tr>'
+  ).join('');
+}
+
+function filterAccounts() {
+  const q = document.getElementById('acc-search').value.toLowerCase();
+  renderAllAccounts(allAccounts.filter(a => a.email.toLowerCase().includes(q)));
+}
+
+function exportAccounts() {
+  if(!allAccounts.length) { log('No accounts to export', 'w'); return; }
+  const rows = ['id,email,password,device,city,status,created_at'];
+  allAccounts.forEach(a => rows.push([a.id, a.email, a.password||'', (a.device_profile||'').replace(/_/g,' '), (a.city||'').replace(/_/g,' '), a.status, a.created_at||''].join(',')));
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = 'khmerghost_accounts.csv'; link.click();
+  log('Exported ' + allAccounts.length + ' accounts to CSV', 's');
+}
+
+async function farmAcc(id) {
+  const d = await api('/api/farm/account/' + id + '/farm', 'POST');
+  if(d && d.success) {
+    log('Farmed account #' + id + ': ' + d.activity, 's');
+  }
+}
+
+// ── Create Account ────────────────────────────────────────────
+async function createAccount() {
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Creating...';
+  log('Creating FB account...');
+
+  const useMail  = document.getElementById('opt-mail').checked;
+  const usePhone = document.getElementById('opt-phone').checked;
+  const warmUp   = document.getElementById('opt-warmup').checked;
+  const proxy    = document.getElementById('opt-proxy').value || null;
+
+  const d = await api('/api/farm/create', 'POST', {useMail, usePhone, warmUp, proxy});
+  btn.disabled = false;
+  btn.innerHTML = '🚀 Create Account';
+
+  if(d && d.success) {
+    showRes('res-create', d,
+      '✅ <b>' + d.name + '</b><br>' +
+      '📧 ' + d.email + '<br>' +
+      '🔑 ' + d.password + '<br>' +
+      '📱 ' + d.fingerprint + '<br>' +
+      '📍 ' + d.location + '<br>' +
+      '⏱️ ' + d.duration
+    );
+    log('Created: ' + d.email + ' | ' + d.name + ' | ' + d.fingerprint, 's');
+    loadStats();
+    loadFarmAccounts();
+  } else {
+    showRes('res-create', d, null);
+    log('Create failed: ' + ((d && d.error) || 'unknown'), 'e');
+  }
+}
+
+async function createBulk() {
+  const count = parseInt(document.getElementById('bulk-count').value) || 3;
+  const btn = document.getElementById('btn-bulk');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Creating ' + count + ' accounts...';
+  log('Bulk creating ' + count + ' accounts...');
+
+  const d = await api('/api/farm/bulk', 'POST', {count});
+  btn.disabled = false;
+  btn.innerHTML = '🔥 Start Bulk Create';
+
+  if(d && d.success) {
+    showRes('res-bulk', d,
+      '✅ Done: ' + d.successful + '/' + d.total + ' success, ' + d.failed + ' failed'
+    );
+    log('Bulk done: ' + d.successful + '/' + d.total, 's');
+    loadStats();
+    loadFarmAccounts();
+  } else {
+    showRes('res-bulk', d, null);
+    log('Bulk failed: ' + ((d && d.error) || 'unknown'), 'e');
+  }
+}
+
+// ── Email ─────────────────────────────────────────────────────
+async function genMail() {
+  const provider = document.getElementById('mail-provider').value;
+  log('Generating ' + provider + ' email...');
+  const d = await api('/api/mail/generate', 'POST', {provider});
+
+  if(d && d.success) {
+    mailToken = d.token || null;
+    mailProv  = provider;
+    showRes('res-mail', d, '✅ Email created: <b>' + d.email + '</b>');
+    document.getElementById('mail-detail').style.display = 'block';
+    document.getElementById('mail-addr').textContent = d.email;
+    document.getElementById('mail-pass').textContent = d.password || 'N/A';
+    document.getElementById('mail-prov').textContent = d.provider;
+    log('Email: ' + d.email, 's');
+  } else {
+    showRes('res-mail', d, null);
+    log('Mail failed: ' + ((d && d.error) || 'unknown'), 'e');
+  }
+}
+
+async function checkInbox() {
+  if(!mailToken) { log('No token — generate email first', 'w'); return; }
+  log('Checking inbox...');
+  const d = await api('/api/mail/inbox?token=' + mailToken + '&provider=' + mailProv);
+  const box = document.getElementById('inbox-content');
+
+  if(d && d.messages && d.messages.length > 0) {
+    box.innerHTML = d.messages.map(m =>
+      '<div class="ibox">' +
+      '<div class="fr">From: ' + (m.from && m.from.address ? m.from.address : 'unknown') + '</div>' +
+      '<div class="sb">' + (m.subject || '(no subject)') + '</div>' +
+      '</div>'
+    ).join('');
+    log(d.messages.length + ' messages in inbox', 's');
+  } else {
+    box.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:10px 0">No messages yet. Check back in a few seconds.</div>';
+    log('Inbox empty', 'i');
+  }
+}
+
+// ── Phone ─────────────────────────────────────────────────────
+async function getNumbers() {
+  const country = document.getElementById('phone-country').value;
+  log('Getting ' + country + ' numbers...');
+  const d = await api('/api/phone/numbers?country=' + country);
+  const list = document.getElementById('numbers-list');
+
+  if(d && d.success && d.numbers && d.numbers.length) {
+    list.innerHTML = d.numbers.map((n, i) =>
+      '<div class="nc" id="nc-' + i + '" onclick="selectNum(' + i + ',this)">' +
+      '<div class="nn">' + (n.display || n.number) + '</div>' +
+      '<div class="nm">' + (n.country || country) + ' · ' + (n.provider || 'receive-smss') + '</div>' +
+      '</div>'
+    ).join('');
+    window._nums = d.numbers;
+    log(d.numbers.length + ' numbers found', 's');
+  } else {
+    list.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:10px">No numbers found or scraping failed.</div>';
+    log('No numbers: ' + ((d && d.error) || 'unknown'), 'w');
+  }
+}
+
+function selectNum(i, el) {
+  document.querySelectorAll('.nc').forEach(n => n.classList.remove('sel'));
+  el.classList.add('sel');
+  selNumber = window._nums[i];
+  document.getElementById('sms-info').innerHTML =
+    '<b style="color:#fff">' + (selNumber.display || selNumber.number) + '</b>' +
+    '<button class="btn sm" onclick="checkSMS()" style="margin-left:10px">🔄 Check SMS</button>';
+  log('Selected: ' + selNumber.number, 'i');
+}
+
+async function checkSMS() {
+  if(!selNumber) return;
+  log('Checking SMS for ' + selNumber.number + '...');
+  const d = await api('/api/phone/messages?url=' + encodeURIComponent(selNumber.url || selNumber.number));
+  const list = document.getElementById('sms-list');
+
+  if(d && d.success && d.messages && d.messages.length) {
+    list.innerHTML = d.messages.map(m => {
+      const otp = m.text && m.text.match(/\b\d{4,8}\b/);
+      return '<div class="mc">' +
+        '<div class="mf">From: ' + (m.from || 'unknown') + ' · ' + (m.time || '') + '</div>' +
+        '<div class="mt">' + (m.text || '') + '</div>' +
+        (otp ? '<button class="otp" onclick="copyOTP(\'' + otp[0] + '\')">OTP: ' + otp[0] + ' (Copy)</button>' : '') +
+        '</div>';
+    }).join('');
+    log(d.messages.length + ' SMS messages', 's');
+  } else {
+    list.innerHTML = '<div style="color:#555;font-size:0.78rem;padding:10px">No messages yet.</div>';
+    log('No SMS yet', 'i');
+  }
+}
+
+function copyOTP(otp) {
+  navigator.clipboard.writeText(otp);
+  log('OTP copied: ' + otp, 's');
+}
+
+// ── Fingerprint ───────────────────────────────────────────────
+async function genFP() {
+  const d = await api('/api/farm/fingerprint');
+  if(d && d.fingerprint) {
+    const fp = d.fingerprint;
+    const box = document.getElementById('fp-box');
+    box.style.display = 'block';
+    box.innerHTML =
+      '<div style="background:#0d0d1a;border-radius:8px;padding:14px">' +
+      [
+        ['📱 Device',    fp.profile || fp.device || '-'],
+        ['📍 Location',  fp.location || '-'],
+        ['🕐 Timezone',  fp.timezone || 'Asia/Phnom_Penh'],
+        ['🌐 Language',  fp.language || 'km-KH'],
+        ['📐 Screen',    (fp.screen && fp.screen.width ? fp.screen.width + 'x' + fp.screen.height : '720x1280')],
+        ['🤖 Android',   fp.androidVersion || '11'],
+        ['🏭 Brand',     fp.brand || '-'],
+      ].map(r => '<div class="fp-row"><span class="fp-k">' + r[0] + '</span><span class="fp-v">' + r[1] + '</span></div>').join('') +
+      '</div>';
+    log('Fingerprint: ' + (fp.profile || fp.device) + ' — ' + fp.location, 's');
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+checkStatus();
+loadStats();
+loadFarmAccounts();
+setInterval(checkStatus, 8000);
+setInterval(loadStats, 30000);
+log('KhmerGhost Dashboard ready. 👑 JZYY (THE MASTER)', 's');
+</script>
+</body>
+</html>
