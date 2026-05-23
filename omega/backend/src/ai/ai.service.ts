@@ -6,17 +6,37 @@ import axios from 'axios';
 
 @Injectable()
 export class AiService {
-  private openai: OpenAI;
-  private anthropic: Anthropic;
-  private googleAi: GoogleGenerativeAI;
+  private openai: OpenAI | null;
+  private anthropic: Anthropic | null;
+  private googleAi: GoogleGenerativeAI | null;
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    this.anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    this.googleAi = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'sk-placeholder-for-testing-only') {
+      console.warn('⚠️ OPENAI_API_KEY not configured. AI features will use mock responses.');
+      this.openai = null;
+    } else {
+      this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'placeholder') {
+      console.warn('⚠️ ANTHROPIC_API_KEY not configured. AI features will use mock responses.');
+      this.anthropic = null;
+    } else {
+      this.anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    }
+
+    if (!process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY === 'placeholder') {
+      console.warn('⚠️ GOOGLE_AI_API_KEY not configured. AI features will use mock responses.');
+      this.googleAi = null;
+    } else {
+      this.googleAi = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+    }
   }
 
   async generateContent(model: string, prompt: string, options?: any) {
+    if (!this.openai && !this.anthropic && !this.googleAi) {
+      return { content: this.getMockResponse(prompt), model: 'mock', tokens: 0 };
+    }
     switch (model) {
       case 'gpt-4':
         return this.generateWithGPT4(prompt, options);
@@ -155,5 +175,8 @@ export class AiService {
     Format as a script with timestamps.`;
     const result = await this.generateContent('gpt-4', prompt);
     return { success: true, script: result.content };
+  }
+  private getMockResponse(prompt: string): string {
+    return "This is a mock AI response because API keys are not configured. For production, please add your OPENAI_API_KEY to .env file.";
   }
 }

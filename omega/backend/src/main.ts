@@ -4,8 +4,10 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   const logger = new Logger('Bootstrap');
-  await app.listen(3000);
-  logger.log('Nest application successfully started');
+  const port = process.env.PORT || 5001;
+  await app.listen(port);
+  logger.log(`Nest application successfully started on port ${port}`);
 }
 bootstrap();

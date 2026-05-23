@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [tenant, setTenant] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,21 +33,22 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirm) { setError('Passwords do not match'); return; }
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5001/auth/login', {
+      const res = await fetch('http://localhost:5001/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, tenantSubdomain: tenant || 'default' }),
+        body: JSON.stringify({ fullName, email, password, tenantSubdomain: tenant || 'default' }),
       });
       const data = await res.json();
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
+        router.replace('/dashboard');
       } else {
-        setError(data.message || 'Login failed. Please check your credentials.');
+        setError(data.message || 'Registration failed');
       }
     } catch {
       setError('Network error. Please try again.');
@@ -53,26 +56,22 @@ export default function LoginPage() {
     setLoading(false);
   };
 
-  const features = [
-    { icon: '⚡', title: 'Lightning Fast', desc: 'Bulk operations in seconds' },
-    { icon: '🛡️', title: 'Enterprise Security', desc: 'Bank-grade encryption' },
-    { icon: '👥', title: 'Team Collaboration', desc: 'Unlimited team members' },
-    { icon: '📊', title: 'Advanced Analytics', desc: 'Real-time insights' },
-    { icon: '🏆', title: '24/7 Support', desc: 'Premium support included' },
-    { icon: '🌐', title: 'Global Infrastructure', desc: '99.99% uptime SLA' },
+  const perks = [
+    { icon: '🚀', title: 'Get started in seconds', desc: 'No credit card required' },
+    { icon: '✨', title: 'Premium UI experience', desc: 'Claude AI-inspired design' },
+    { icon: '🔒', title: 'Industry-grade security', desc: 'End-to-end encrypted' },
   ];
 
   if (!mounted) return null;
 
   return (
     <div className="page-split">
-      {/* ── Left Brand Side ── */}
+      {/* ── Left Brand ── */}
       <div className="side-brand">
         <div style={{ position: 'relative', zIndex: 10 }}>
-          {/* Logo */}
           <div className="logo-block">
             <div className="logo-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
             </div>
@@ -80,49 +79,35 @@ export default function LoginPage() {
           </div>
 
           <h1 className="brand-headline">
-            Welcome to the<br />
-            <span className="brand-gradient-text">Future of Automation</span>
+            Create your<br />
+            <span className="brand-gradient-text">Free Account</span>
           </h1>
           <p className="brand-subtext">
-            Join thousands of businesses using KhmerGhost OMEGA to automate their social media growth with AI-powered tools.
+            Join the KhmerGhost OMEGA platform and start automating your social media growth today. No credit card needed.
           </p>
 
-          {/* Feature Grid */}
-          <div className="feature-grid">
-            {features.map((f, i) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {perks.map((p, i) => (
               <div key={i} className="feature-item">
-                <span style={{ fontSize: '1.125rem', lineHeight: 1.2 }}>{f.icon}</span>
+                <span style={{ fontSize: '1.5rem' }}>{p.icon}</span>
                 <div>
-                  <p className="feature-title">{f.title}</p>
-                  <p className="feature-desc">{f.desc}</p>
+                  <p className="feature-title">{p.title}</p>
+                  <p className="feature-desc">{p.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Trust Row */}
         <div className="trust-row" style={{ position: 'relative', zIndex: 10 }}>
-          <div className="avatar-stack">
-            {[0,1,2,3].map(i => <div key={i} className="av" />)}
-          </div>
-          <div>
-            <p className="trust-label">Trusted by <strong>10,000+</strong> businesses</p>
-            <div className="stars">
-              {[0,1,2,3,4].map(i => (
-                <svg key={i} className="star" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              ))}
-              <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)', marginLeft: 4 }}>4.9 / 5</span>
-            </div>
-          </div>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+            🎉 Over <strong style={{ color: '#fff' }}>10,000+</strong> businesses already onboard
+          </p>
         </div>
       </div>
 
-      {/* ── Right Form Side ── */}
+      {/* ── Right Form ── */}
       <div className="side-form">
-        {/* Theme toggle */}
         <button className="theme-toggle-btn" onClick={toggleTheme} aria-label="Toggle theme">
           {dark ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -136,7 +121,6 @@ export default function LoginPage() {
         </button>
 
         <div className="animate-in" style={{ width: '100%', maxWidth: 440 }}>
-          {/* Mobile Logo */}
           <div className="mobile-logo">
             <div className="mobile-logo-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -144,14 +128,12 @@ export default function LoginPage() {
               </svg>
             </div>
             <span className="gradient-text">KhmerGhost</span>
-            <span style={{ color: 'var(--fg-muted)', fontSize: '0.875rem', marginTop: 4 }}>OMEGA Platform</span>
           </div>
 
-          {/* Card */}
           <div className="card">
             <div className="form-header">
-              <h2 className="form-title">Welcome back 👋</h2>
-              <p className="form-subtitle">Sign in to your KhmerGhost account</p>
+              <h2 className="form-title">Create account ✨</h2>
+              <p className="form-subtitle">Start your free journey today</p>
             </div>
 
             {error && (
@@ -163,18 +145,17 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input type="text" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} className="form-input no-icon" required />
+              </div>
+
+              <div className="form-group">
                 <label className="form-label">Workspace</label>
                 <div className="input-wrapper">
                   <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
                   </svg>
-                  <input
-                    type="text"
-                    placeholder="your-workspace"
-                    value={tenant}
-                    onChange={e => setTenant(e.target.value)}
-                    className="form-input"
-                  />
+                  <input type="text" placeholder="your-workspace" value={tenant} onChange={e => setTenant(e.target.value)} className="form-input" required />
                 </div>
               </div>
 
@@ -184,54 +165,44 @@ export default function LoginPage() {
                   <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                   </svg>
-                  <input
-                    type="email"
-                    placeholder="hello@example.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="form-input"
-                    required
-                  />
+                  <input type="email" placeholder="hello@example.com" value={email} onChange={e => setEmail(e.target.value)} className="form-input" required />
                 </div>
               </div>
 
               <div className="form-group">
-                <div style={{ display:'flex', justifyContent:'space-between', marginBottom: 6 }}>
-                  <label className="form-label" style={{ marginBottom: 0 }}>Password</label>
-                  <button type="button" style={{ fontSize: '0.75rem', color: 'var(--primary)', background:'none', border:'none', cursor:'pointer' }}>
-                    Forgot password?
-                  </button>
-                </div>
+                <label className="form-label">Password</label>
                 <div className="input-wrapper">
                   <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
-                  <input
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="form-input"
-                    required
-                  />
+                  <input type="password" placeholder="Min. 8 characters" value={password} onChange={e => setPassword(e.target.value)} className="form-input" required />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
+                <div className="input-wrapper">
+                  <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <input type="password" placeholder="Repeat password" value={confirm} onChange={e => setConfirm(e.target.value)} className="form-input" required />
                 </div>
               </div>
 
               <button type="submit" disabled={loading} className="btn-primary">
-                {loading ? <div className="spinner" /> : <>Sign In <span>→</span></>}
+                {loading ? <div className="spinner" /> : <>Create Account ✨</>}
               </button>
             </form>
 
             <div className="divider" />
             <p style={{ textAlign:'center', fontSize:'0.875rem', color:'var(--fg-muted)' }}>
-              Don't have an account?{' '}
-              <Link href="/register" className="link">Create free account →</Link>
+              Already have an account?{' '}
+              <Link href="/login" className="link">Sign in →</Link>
             </p>
           </div>
 
-          {/* Trust Badges */}
           <div className="trust-badges">
-            {['SSL Encrypted', 'GDPR Compliant', '24/7 Support'].map(b => (
+            {['SSL Encrypted', 'GDPR Compliant', 'Free Forever'].map(b => (
               <div key={b} className="trust-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12"/>
